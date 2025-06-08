@@ -24,8 +24,7 @@ An automated bot for scanning products on the Ecosapiens platform with support f
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/vikitoshi/Ecosapiens-Auto-Bot.git
-   cd Ecosapiens-Auto-Bot
+   git clone https://github.com/airdropbomb/Ecosapiens.git && cd Ecosapiens 
    ```
 
 2. **Install dependencies**:
