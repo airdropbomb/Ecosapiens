@@ -3,6 +3,7 @@ const FormData = require('form-data');
 const readline = require('readline');
 const { createCanvas } = require('canvas');
 require('dotenv').config();
+const fs = require('fs').promises;
 
 const colors = {
   reset: '\x1b[0m',
@@ -31,24 +32,24 @@ const logger = {
 };
 
 class EcosapiensBot {
-  constructor() {
+  constructor(cookie) {
     this.baseURL = 'https://api.prod.ecosapiens.xyz';
-    this.cookie = process.env.COOKIE;
+    this.cookie = cookie;
     this.userAgent = this.getRandomUserAgent();
 
     this.productImages = [
-      'https://images.pexels.com/photos/4705879/pexels-photo-4705879.jpeg?auto=compress&cs=tinysrgb&w=400', 
-      'https://images.pexels.com/photos/102104/pexels-photo-102104.jpeg?auto=compress&cs=tinysrgb&w=400', 
-      'https://images.pexels.com/photos/634146/pexels-photo-634146.jpeg?auto=compress&cs=tinysrgb&w=400', 
-      'https://images.pexels.com/photos/4434469/pexels-photo-4434469.jpeg?auto=compress&cs=tinysrgb&w=400', 
-      'https://images.pexels.com/photos/279906/pexels-photo-279906.jpeg?auto=compress&cs=tinysrgb&w=400', 
-      'https://images.pexels.com/photos/1583884/pexels-photo-1583884.jpeg?auto=compress&cs=tinysrgb&w=400', 
-      'https://images.pexels.com/photos/128402/pexels-photo-128402.jpeg?auto=compress&cs=tinysrgb&w=400', 
-      'https://images.pexels.com/photos/2144200/pexels-photo-2144200.jpeg?auto=compress&cs=tinysrgb&w=400', 
-      'https://images.pexels.com/photos/583680/pexels-photo-583680.jpeg?auto=compress&cs=tinysrgb&w=400', 
-      'https://images.pexels.com/photos/264905/pexels-photo-264905.jpeg?auto=compress&cs=tinysrgb&w=400' 
+      'https://images.pexels.com/photos/4705879/pexels-photo-4705879.jpeg?auto=compress&cs=tinysrgb&w=400',
+      'https://images.pexels.com/photos/102104/pexels-photo-102104.jpeg?auto=compress&cs=tinysrgb&w=400',
+      'https://images.pexels.com/photos/634146/pexels-photo-634146.jpeg?auto=compress&cs=tinysrgb&w=400',
+      'https://images.pexels.com/photos/4434469/pexels-photo-4434469.jpeg?auto=compress&cs=tinysrgb&w=400',
+      'https://images.pexels.com/photos/279906/pexels-photo-279906.jpeg?auto=compress&cs=tinysrgb&w=400',
+      'https://images.pexels.com/photos/1583884/pexels-photo-1583884.jpeg?auto=compress&cs=tinysrgb&w=400',
+      'https://images.pexels.com/photos/128402/pexels-photo-128402.jpeg?auto=compress&cs=tinysrgb&w=400',
+      'https://images.pexels.com/photos/2144200/pexels-photo-2144200.jpeg?auto=compress&cs=tinysrgb&w=400',
+      'https://images.pexels.com/photos/583680/pexels-photo-583680.jpeg?auto=compress&cs=tinysrgb&w=400',
+      'https://images.pexels.com/photos/264905/pexels-photo-264905.jpeg?auto=compress&cs=tinysrgb&w=400'
     ];
-    
+
     this.productNames = [
       'soap', 'cigarette', 'lollipop', 'toothpaste', 'shampoo',
       'snacks', 'drinks', 'cookies', 'candy', 'chocolate'
@@ -85,7 +86,7 @@ class EcosapiensBot {
       'accept-language': 'en-US,en;q=0.9',
       'sec-ch-ua': '"Chromium";v="120", "Google Chrome";v="120", "Not(A:Brand";v="24"',
       'sec-ch-ua-mobile': '?0',
-      'sec-ch-ua-platform': '"Windows"',
+      'sec-ch-ua-platform': '"Linux"',
       'sec-fetch-dest': 'empty',
       'sec-fetch-mode': 'cors',
       'sec-fetch-site': 'same-site',
@@ -104,7 +105,12 @@ class EcosapiensBot {
           method: 'GET',
           url: url,
           responseType: 'arraybuffer',
-          timeout: 10000
+          timeout: 10000,
+          proxy: process.env.HTTP_PROXY ? {
+            protocol: 'http',
+            host: process.env.HTTP_PROXY.split('://')[1].split(':')[0],
+            port: parseInt(process.env.HTTP_PROXY.split(':')[2]) || 80
+          } : false
         });
         return Buffer.from(response.data);
       } catch (error) {
@@ -195,7 +201,12 @@ class EcosapiensBot {
     try {
       const response = await axios.get(`${this.baseURL}/api/session`, {
         headers: this.getHeaders(),
-        timeout: 5000
+        timeout: 5000,
+        proxy: process.env.HTTP_PROXY ? {
+          protocol: 'http',
+          host: process.env.HTTP_PROXY.split('://')[1].split(':')[0],
+          port: parseInt(process.env.HTTP_PROXY.split(':')[2]) || 80
+        } : false
       });
       return response.data.current_user;
     } catch (error) {
@@ -218,7 +229,12 @@ class EcosapiensBot {
           ...formData.getHeaders(),
           'content-type': `multipart/form-data; boundary=${formData.getBoundary()}`
         },
-        timeout: 10000
+        timeout: 10000,
+        proxy: process.env.HTTP_PROXY ? {
+          protocol: 'http',
+          host: process.env.HTTP_PROXY.split('://')[1].split(':')[0],
+          port: parseInt(process.env.HTTP_PROXY.split(':')[2]) || 80
+        } : false
       });
 
       return response.data;
@@ -232,7 +248,12 @@ class EcosapiensBot {
     try {
       const response = await axios.get(`${this.baseURL}/api/scans/${scanId}`, {
         headers: this.getHeaders(),
-        timeout: 5000
+        timeout: 5000,
+        proxy: process.env.HTTP_PROXY ? {
+          protocol: 'http',
+          host: process.env.HTTP_PROXY.split('://')[1].split(':')[0],
+          port: parseInt(process.env.HTTP_PROXY.split(':')[2]) || 80
+        } : false
       });
       return response.data;
     } catch (error) {
@@ -327,110 +348,121 @@ class EcosapiensBot {
 
   async validateCookie() {
     if (!this.cookie) {
-      logger.error('No cookie provided in .env file. Please set COOKIE environment variable.');
+      logger.error('No cookie provided. Skipping this account.');
       return false;
     }
     if (!this.cookie.includes('_ecolink_session')) {
-      logger.error('Invalid cookie format. Cookie must include "_ecolink_session".');
+      logger.error('Invalid cookie format. Cookie must include "_ecolink_session". Skipping this account.');
       return false;
     }
     return true;
   }
 
-  async run() {
+  async runAccountScans(numScans, useCanvas = false) {
     try {
-      logger.banner();
-
       if (!(await this.validateCookie())) {
-        return;
+        return { successCount: 0, failCount: 0 };
       }
 
-      logger.step('Getting user information...');
-      let userInfo = null;
-      try {
-        userInfo = await this.getUserInfo();
-        
-        console.log(`${colors.cyan}${colors.bold}User Information:${colors.reset}`);
-        console.log(`Name: ${userInfo?.name || userInfo?.first_name || 'Unknown'}`);
-        console.log(`Email: ${userInfo?.email || 'Unknown'}`);
-        console.log(`User ID: ${userInfo?.id || 'Unknown'}`);
-        console.log(`Referral Code: ${userInfo?.referral_code || 'Unknown'}`);
-        console.log(`Wallet: ${userInfo?.wallet_address || 'Not set'}`);
-        console.log();
-      } catch (error) {
-        logger.warn('Could not fetch user info, continuing with scan only mode...');
-        console.log();
-      }
-
-      console.log(`${colors.yellow}Select image source:${colors.reset}`);
-      console.log('1. Canvas-generated images');
-      console.log('2. URL-based images (default)');
-      const imageSource = await this.getUserInput(
-        `${colors.yellow}Enter option number (1 or 2): ${colors.reset}`
-      );
-      const useCanvas = parseInt(imageSource) === 1;
-      if (![1, 2].includes(parseInt(imageSource))) {
-        logger.info('Invalid option, defaulting to URL-based images');
-      }
-      console.log();
-
-      const scanCount = await this.getUserInput(`${colors.yellow}How many scans do you want to perform? ${colors.reset}`);
-      const numScans = parseInt(scanCount);
-
-      if (isNaN(numScans) || numScans <= 0) {
-        logger.error('Invalid number of scans');
-        return;
-      }
-
-      logger.success(`Starting ${numScans} scans ${useCanvas ? 'with canvas-generated images' : 'with URL-based images'}...`);
-      console.log();
-
+      logger.step(`Running scans for account with cookie: ${this.cookie.substring(0, 10)}...`);
       let successCount = 0;
       let failCount = 0;
 
       for (let i = 1; i <= numScans; i++) {
         try {
-          logger.step(`Performing scan ${i}/${numScans}...`);
-          
-          const result = await this.performScan(useCanvas);
+          logger.step(`Performing scan ${i}/${numScans} for this account...`);
+          await this.performScan(useCanvas);
           logger.success(`Scan ${i} completed successfully!`);
           successCount++;
 
           if (i < numScans) {
             logger.loading('Waiting before next scan...');
-            await this.sleep(3000 + Math.random() * 2000); 
+            await this.sleep(3000 + Math.random() * 2000);
           }
-          
         } catch (error) {
           logger.error(`Scan ${i} failed: ${error.message}`);
           failCount++;
         }
       }
 
-      console.log();
-      logger.success(`Scanning completed!`);
-      logger.info(`Successful scans: ${successCount}`);
-      if (failCount > 0) {
-        logger.warn(`Failed scans: ${failCount}`);
-      }
-
+      return { successCount, failCount };
     } catch (error) {
-      logger.error(`Bot error: ${error.message}`);
-
-      console.log(`${colors.yellow}Debug Info:${colors.reset}`);
-      console.log(`- Base URL: ${this.baseURL}`);
-      console.log(`- User Agent: ${this.userAgent}`);
-      console.log(`- Cookie: ${this.cookie ? 'Present' : 'Missing'}`);
-      
-      if (error.response) {
-        console.log(`- Response Status: ${error.response.status}`);
-        console.log(`- Response Data: ${JSON.stringify(error.response.data)}`);
-      }
+      logger.error(`Account error: ${error.message}`);
+      return { successCount: 0, failCount: numScans };
     }
   }
 }
 
-const bot = new EcosapiensBot();
-bot.run().catch(error => {
+async function main() {
+  try {
+    logger.banner();
+
+    // Load cookies from a file or environment variable
+    let cookies = [];
+    if (process.env.COOKIES_FILE) {
+      const cookiesContent = await fs.readFile(process.env.COOKIES_FILE, 'utf-8');
+      cookies = cookiesContent.split('\n').filter(cookie => cookie.trim() && cookie.includes('_ecolink_session'));
+    } else if (process.env.COOKIES) {
+      cookies = process.env.COOKIES.split(',').map(cookie => cookie.trim());
+    } else {
+      logger.error('No COOKIES or COOKIES_FILE environment variable set. Please provide multiple cookies.');
+      return;
+    }
+
+    if (cookies.length === 0) {
+      logger.error('No valid cookies found. Exiting.');
+      return;
+    }
+
+    logger.info(`Found ${cookies.length} accounts to process.`);
+
+    // Use a bot instance for user input
+    const bot = new EcosapiensBot(cookies[0]);
+
+    console.log(`${colors.yellow}Select image source:${colors.reset}`);
+    console.log('1. Canvas-generated images');
+    console.log('2. URL-based images (default)');
+    const imageSource = await bot.getUserInput(
+      `${colors.yellow}Enter option number (1 or 2): ${colors.reset}`
+    );
+    const useCanvas = parseInt(imageSource) === 1;
+    if (![1, 2].includes(parseInt(imageSource))) {
+      logger.info('Invalid option, defaulting to URL-based images');
+    }
+    console.log();
+
+    const scanCount = await bot.getUserInput(`${colors.yellow}How many scans per account? ${colors.reset}`);
+    const numScans = parseInt(scanCount);
+
+    if (isNaN(numScans) || numScans <= 0) {
+      logger.error('Invalid number of scans');
+      return;
+    }
+
+    let totalSuccessCount = 0;
+    let totalFailCount = 0;
+
+    for (const cookie of cookies) {
+      const bot = new EcosapiensBot(cookie);
+      const { successCount, failCount } = await bot.runAccountScans(numScans, useCanvas);
+      totalSuccessCount += successCount;
+      totalFailCount += failCount;
+      logger.loading('Waiting before next account...');
+      await bot.sleep(5000); // Delay between accounts to avoid rate limiting
+    }
+
+    console.log();
+    logger.success(`All accounts completed!`);
+    logger.info(`Total successful scans: ${totalSuccessCount}`);
+    if (totalFailCount > 0) {
+      logger.warn(`Total failed scans: ${totalFailCount}`);
+    }
+
+  } catch (error) {
+    logger.error(`Main process error: ${error.message}`);
+  }
+}
+
+main().catch(error => {
   console.error('Bot crashed:', error);
 });
